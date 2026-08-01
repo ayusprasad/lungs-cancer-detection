@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lung Cancer Classification Lab</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">LOCAL MODEL LAB / LC25000</p>
+        <h1>Lung cancer classification, in your browser.</h1>
+        <p class="lede">A local dashboard for the tabular survey model and the pretrained CNN trained on your extracted image archive.</p>
+      </div>
+      <div class="status-card">
+        <span class="status-dot" id="status-dot"></span>
+        <div><strong id="health-label">Connecting</strong><small id="health-detail">Checking local API</small></div>
+      </div>
+    </header>
+
+    <section class="notice"><strong>Research tool:</strong> predictions are not a medical diagnosis and must be reviewed by a qualified clinician.</section>
+
+    <section class="overview-grid" id="dataset-summary">
+      <article class="metric-card"><span>Tabular rows</span><strong id="tabular-rows">-</strong><small>survey records</small></article>
+      <article class="metric-card"><span>Image classes</span><strong id="image-classes">-</strong><small>LC25000 folders</small></article>
+      <article class="metric-card"><span>Image source</span><strong id="image-ready">Not trained</strong><small>pretrained CNN status</small></article>
+    </section>
+
+    <nav class="tabs" aria-label="Model sections">
+      <button class="tab active" data-panel="tabular-panel">Tabular model</button>
+      <button class="tab" data-panel="image-panel">Image CNN</button>
+    </nav>
+
+    <section class="panel active" id="tabular-panel">
+      <div class="panel-heading"><div><p class="eyebrow">SCIKIT-LEARN</p><h2>Risk from patient survey data</h2></div><button class="secondary" id="train-tabular">Train tabular model</button></div>
+      <div class="controls"><label>Training rows <input id="tabular-sample" type="number" min="20" max="10000" value="309"><small>Use the complete CSV or reduce this for a quick test.</small></label></div>
+      <div class="metric-strip" id="tabular-metrics"><span>Train the model to load metrics.</span></div>
+      <form class="feature-grid" id="tabular-form"></form>
+      <button class="primary" id="predict-tabular">Predict tabular risk</button>
+      <div class="result" id="tabular-result" hidden></div>
+    </section>
+
+    <section class="panel" id="image-panel">
+      <div class="panel-heading"><div><p class="eyebrow">TENSORFLOW / EFFICIENTNETB0</p><h2>Classify a histopathology image</h2></div><button class="secondary" id="train-image">Train image CNN</button></div>
+      <p class="source-line"><strong>Training source:</strong> <span id="image-source-path">Checking local archive...</span></p>
+      <div class="controls controls-three">
+        <label>Images per class <input id="image-sample" type="number" min="2" max="500" value="50"><small>Sampled from your local train folders.</small></label>
+        <label>Epochs <input id="image-epochs" type="number" min="1" max="50" value="8"></label>
+        <label class="check-label"><input id="fine-tune" type="checkbox" checked> Fine-tune final CNN layers</label>
+      </div>
+      <div class="metric-strip" id="image-metrics"><span>Train the CNN to load metrics.</span></div>
+      <div class="upload-zone" id="drop-zone"><input type="file" id="image-file" accept="image/jpeg,image/png"><div class="upload-copy"><strong>Drop an image here</strong><span>or choose a JPG or PNG from your device</span></div><img id="preview" alt="Selected image preview" hidden></div>
+      <button class="primary" id="predict-image">Predict image class</button>
+      <div class="result" id="image-result" hidden></div>
+    </section>
+
+    <footer>Local only. Models and logs are stored under this project folder.</footer>
+  </main>
+  <script src="/script.js"></script>
+</body>
+</html>

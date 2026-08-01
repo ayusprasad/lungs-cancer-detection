@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+.env
+
+# The extracted LC25000 image archive stays local and is sampled during training.
+data/archive/
+data/lc25000_lung_sample/
+
+# Local runtime output.
+logs/deep_training_stdout.txt
+logs/deep_training_stderr.txt
+logs/server_stdout.txt
+logs/server_stderr.txt
