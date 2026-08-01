@@ -25,6 +25,8 @@ python train.py --image-sample-per-class 50 --image-epochs 8
 
 Training metrics are saved in `logs/training_logs.json` and `logs/validation_logs.json`. Predictions are appended to `logs/predictions_log.json`; trained models are saved under `artifacts/`.
 
+For a detailed interview explanation covering the architecture, model choices, alternatives, metrics, limitations, and likely questions, read `INTERVIEW_PROJECT_GUIDE.md`.
+
 The older Streamlit demo and notebook remain available:
 
 ```powershell
