@@ -3,7 +3,11 @@ from __future__ import annotations
 import argparse
 import json
 
-from lung_cancer_pipeline import load_tabular_dataset, train_image_model, train_tabular_model
+from lung_cancer_pipeline import (
+    load_tabular_dataset,
+    train_image_model,
+    train_tabular_model,
+)
 
 
 def main() -> None:

@@ -1,16 +1,35 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+
+# Python and virtual environments
 __pycache__/
-*.pyc
-.pytest_cache/
+*.py[cod]
+*.egg-info/
 .venv/
 venv/
-.env
+ENV/
 
-# The extracted LC25000 image archive stays local and is sampled during training.
+# Local LC25000 archive and generated samples
 data/archive/
 data/lc25000_lung_sample/
 
-# Local runtime output.
-logs/deep_training_stdout.txt
-logs/deep_training_stderr.txt
-logs/server_stdout.txt
-logs/server_stderr.txt
+# Local runtime output can contain health-related prediction inputs
+logs/*.json
+logs/*.log
+logs/*_stdout.txt
+logs/*_stderr.txt
+
+# Test and tooling output
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

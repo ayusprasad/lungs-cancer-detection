@@ -7,7 +7,6 @@ import streamlit as st
 from lung_cancer_pipeline import (
     IMAGE_CLASS_NAMES,
     LOCAL_IMAGE_ROOT,
-    TABULAR_FEATURE_COLUMNS,
     load_image_model,
     load_tabular_dataset,
     load_tabular_model,
@@ -16,7 +15,6 @@ from lung_cancer_pipeline import (
     train_image_model,
     train_tabular_model,
 )
-
 
 st.set_page_config(page_title="Lung Cancer Local Demo", layout="wide")
 
@@ -86,7 +84,12 @@ tab1, tab2 = st.tabs(["Tabular CSV", "LC25000 Images"])
 
 with tab1:
     st.subheader("Tabular Survey Model")
-    df = load_tabular_dataset()
+    try:
+        df = load_tabular_dataset()
+    except (OSError, RuntimeError, ValueError) as error:
+        st.error(f"Could not load the tabular dataset: {error}")
+        st.info("Confirm that the survey CSV is available, then reload the app.")
+        st.stop()
     left, right = st.columns([1, 1])
     with left:
         st.write(f"Rows: **{len(df)}**")
@@ -97,13 +100,17 @@ with tab1:
         st.info("The tabular model is the cleaned version of the original CSV path, kept short for local testing.")
 
     if train_tabular or "tabular_bundle" not in st.session_state:
-        if train_tabular:
-            with st.spinner("Training tabular model on a small sample..."):
-                st.session_state.tabular_bundle = train_tabular_model(sample_size=sample_size)
-        else:
-            loaded = load_tabular_model()
-            if loaded is not None:
-                st.session_state.tabular_bundle = loaded
+        try:
+            if train_tabular:
+                with st.spinner("Training tabular model on a small sample..."):
+                    st.session_state.tabular_bundle = train_tabular_model(sample_size=sample_size)
+            else:
+                loaded = load_tabular_model()
+                if loaded is not None:
+                    st.session_state.tabular_bundle = loaded
+        except (EOFError, OSError, RuntimeError, ValueError) as error:
+            st.session_state.tabular_bundle = None
+            st.error(f"The tabular model is unavailable: {error}")
 
     bundle = st.session_state.get("tabular_bundle")
     if bundle:
@@ -123,11 +130,15 @@ with tab1:
 
         features = _render_tabular_inputs()
         if st.button("Predict tabular risk"):
-            result = predict_tabular(bundle["model"], features)
-            if result["prediction"] == "YES":
-                st.error(f"Prediction: {result['prediction']} probability={result['probability_yes']:.2%}")
+            try:
+                result = predict_tabular(bundle["model"], features)
+            except (KeyError, TypeError, ValueError) as error:
+                st.error(f"Could not make a tabular prediction: {error}")
             else:
-                st.success(f"Prediction: {result['prediction']} probability={result['probability_yes']:.2%}")
+                if result["prediction"] == "YES":
+                    st.error(f"Prediction: {result['prediction']} probability={result['probability_yes']:.2%}")
+                else:
+                    st.success(f"Prediction: {result['prediction']} probability={result['probability_yes']:.2%}")
         test_frame = bundle.get("test_frame")
         if test_frame is not None:
             st.dataframe(test_frame, width="stretch")
@@ -148,16 +159,20 @@ with tab2:
         st.info("This uses your local LC25000 archive with 4 folders: colon_aca, colon_n, lung_aca, and lung_n.")
 
     if train_images or "image_bundle" not in st.session_state:
-        if train_images:
-            with st.spinner("Training the LC25000 lung image model..."):
-                st.session_state.image_bundle = train_image_model(
-                    sample_per_class=image_sample_per_class,
-                    epochs=image_epochs,
-                )
-        else:
-            loaded = load_image_model()
-            if loaded is not None:
-                st.session_state.image_bundle = loaded
+        try:
+            if train_images:
+                with st.spinner("Training the LC25000 lung image model..."):
+                    st.session_state.image_bundle = train_image_model(
+                        sample_per_class=image_sample_per_class,
+                        epochs=image_epochs,
+                    )
+            else:
+                loaded = load_image_model()
+                if loaded is not None:
+                    st.session_state.image_bundle = loaded
+        except (EOFError, OSError, RuntimeError, ValueError) as error:
+            st.session_state.image_bundle = None
+            st.error(f"The image model is unavailable: {error}")
 
     image_bundle = st.session_state.get("image_bundle")
     if image_bundle:
@@ -171,8 +186,13 @@ with tab2:
         if image_file is not None:
             st.image(image_file, caption="Uploaded image", width="stretch")
             if st.button("Predict image class"):
-                result = predict_image(image_bundle["model"], image_file, image_bundle["class_names"])
-                st.write(f"Prediction: **{result['prediction']}**")
-                st.bar_chart(result["probabilities"])
+                try:
+                    image_file.seek(0)
+                    result = predict_image(image_bundle["model"], image_file, image_bundle["class_names"])
+                except (OSError, TypeError, ValueError) as error:
+                    st.error(f"Could not process this image: {error}")
+                else:
+                    st.write(f"Prediction: **{result['prediction']}**")
+                    st.bar_chart(result["probabilities"])
     else:
         st.info("Train the image model to enable LC25000 predictions.")

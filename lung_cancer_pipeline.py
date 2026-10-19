@@ -3,8 +3,8 @@ from __future__ import annotations
 import json
 import random
 import shutil
-from io import BytesIO
 from datetime import datetime, timezone
+from io import BytesIO
 from pathlib import Path
 from typing import Any
 
@@ -102,6 +102,10 @@ def ensure_tabular_dataset() -> Path:
 def _normalize_tabular_dataset(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
     df.columns = [c.strip() for c in df.columns]
+    required_columns = set(TABULAR_FEATURE_COLUMNS + [TABULAR_TARGET_COLUMN])
+    missing_columns = sorted(required_columns.difference(df.columns))
+    if missing_columns:
+        raise ValueError(f"Dataset is missing required columns: {', '.join(missing_columns)}")
 
     gender_map = {"M": 1, "F": 0, "MALE": 1, "FEMALE": 0, 1: 1, 0: 0}
     target_map = {"YES": 1, "NO": 0, 1: 1, 0: 0}
@@ -200,9 +204,9 @@ def train_tabular_model(sample_size: int = 50, random_state: int = 42) -> dict[s
         "recall": float(recall_score(y_test, predictions, zero_division=0)),
         "f1": float(f1_score(y_test, predictions, zero_division=0)),
         "confusion_matrix": confusion_matrix(y_test, predictions).tolist(),
-        "train_rows": int(len(X_train)),
-        "test_rows": int(len(X_test)),
-        "sample_rows": int(len(sampled)),
+        "train_rows": len(X_train),
+        "test_rows": len(X_test),
+        "sample_rows": len(sampled),
         "positive_rate": float(sampled[TABULAR_TARGET_COLUMN].mean()),
     }
 
@@ -252,7 +256,7 @@ def ensure_lc25000_lung_sample(sample_per_class: int = 10) -> Path:
             "Point the app at your extracted dataset or place it there."
         )
 
-    sample_per_class = max(2, int(sample_per_class))
+    sample_per_class = max(2, sample_per_class)
     cached_manifest = _read_json(IMAGE_SAMPLE_ROOT / "manifest.json", {})
     if (
         IMAGE_SAMPLE_ROOT.exists()
@@ -432,13 +436,13 @@ def train_image_model(
     metrics = {
         "loss": float(eval_loss),
         "accuracy": float(eval_accuracy),
-        "epochs_ran": int(len(history.history["loss"])),
-        "sample_per_class": int(sample_per_class),
-        "train_batches": int(tf.data.experimental.cardinality(train_ds).numpy()),
-        "val_batches": int(tf.data.experimental.cardinality(val_ds).numpy()),
+        "epochs_ran": len(history.history["loss"]),
+        "sample_per_class": sample_per_class,
+        "train_batches": tf.data.experimental.cardinality(train_ds).numpy(),
+        "val_batches": tf.data.experimental.cardinality(val_ds).numpy(),
         "model": IMAGE_MODEL_NAME,
         "fine_tuned": bool(fine_tune and epochs > head_epochs),
-        "fine_tune_layers": int(fine_tune_layers if fine_tune else 0),
+        "fine_tune_layers": fine_tune_layers if fine_tune else 0,
         "classification_report": report,
         "confusion_matrix": confusion_matrix(
             val_labels, val_predictions, labels=list(range(len(IMAGE_CLASS_NAMES)))
@@ -499,7 +503,7 @@ def load_image_model() -> dict[str, Any] | None:
 
 def dataset_summary() -> dict[str, Any]:
     summary: dict[str, Any] = {
-        "tabular_rows": int(len(load_tabular_dataset())),
+        "tabular_rows": len(load_tabular_dataset()),
         "image_archive": str(LOCAL_IMAGE_ARCHIVE_ROOT),
         "image_source": str(LOCAL_IMAGE_ROOT),
         "image_test_source": str(LOCAL_IMAGE_TEST_ROOT),
