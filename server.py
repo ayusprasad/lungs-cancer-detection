@@ -4,7 +4,10 @@ import os
 from pathlib import Path
 from typing import Any
 
+from dotenv import load_dotenv
 from flask import Flask, jsonify, request, send_from_directory
+
+load_dotenv()
 
 from lung_cancer_pipeline import (
     IMAGE_CLASS_NAMES,

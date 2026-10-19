@@ -102,6 +102,10 @@ def ensure_tabular_dataset() -> Path:
 def _normalize_tabular_dataset(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
     df.columns = [c.strip() for c in df.columns]
+    required_columns = set(TABULAR_FEATURE_COLUMNS + [TABULAR_TARGET_COLUMN])
+    missing_columns = sorted(required_columns.difference(df.columns))
+    if missing_columns:
+        raise ValueError(f"Dataset is missing required columns: {', '.join(missing_columns)}")
 
     gender_map = {"M": 1, "F": 0, "MALE": 1, "FEMALE": 0, 1: 1, 0: 0}
     target_map = {"YES": 1, "NO": 0, 1: 1, 0: 0}
