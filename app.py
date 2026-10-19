@@ -16,7 +16,6 @@ from lung_cancer_pipeline import (
     train_tabular_model,
 )
 
-
 st.set_page_config(page_title="Lung Cancer Local Demo", layout="wide")
 
 

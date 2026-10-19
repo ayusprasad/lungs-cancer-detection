@@ -7,8 +7,6 @@ from typing import Any
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request, send_from_directory
 
-load_dotenv()
-
 from lung_cancer_pipeline import (
     IMAGE_CLASS_NAMES,
     LOCAL_IMAGE_ARCHIVE_ROOT,
@@ -23,6 +21,8 @@ from lung_cancer_pipeline import (
     train_image_model,
     train_tabular_model,
 )
+
+load_dotenv()
 
 
 ROOT = Path(__file__).resolve().parent
@@ -65,8 +65,8 @@ def health():
 def dataset():
     try:
         return jsonify({"ok": True, "data": dataset_summary()})
-    except Exception as exc:
-        return _error(f"Could not inspect the local dataset: {exc}", 500)
+    except Exception:  # noqa: BLE001 - model and data libraries raise varied runtime errors.
+        return _error("Could not inspect the local dataset.", 500)
 
 
 @app.get("/api/metrics")
@@ -96,8 +96,8 @@ def train_tabular():
     try:
         result = train_tabular_model(sample_size=sample_size or len(load_tabular_dataset()))
         return jsonify({"ok": True, "metrics": result["metrics"]})
-    except Exception as exc:
-        return _error(f"Tabular training failed: {exc}", 500)
+    except Exception:  # noqa: BLE001 - model and data libraries raise varied runtime errors.
+        return _error("Tabular training failed. Verify the dataset and model configuration.", 500)
 
 
 @app.post("/api/train/image")
@@ -115,8 +115,8 @@ def train_image():
             fine_tune=fine_tune,
         )
         return jsonify({"ok": True, "metrics": result["metrics"]})
-    except Exception as exc:
-        return _error(f"Image training failed: {exc}", 500)
+    except Exception:  # noqa: BLE001 - model and data libraries raise varied runtime errors.
+        return _error("Image training failed. Verify the image archive and model configuration.", 500)
 
 
 @app.post("/api/predict/tabular")
@@ -132,8 +132,8 @@ def predict_tabular_route():
         result = predict_tabular(bundle["model"], {column: payload[column] for column in TABULAR_FEATURE_COLUMNS})
         log_prediction("tabular", result)
         return jsonify({"ok": True, "result": result})
-    except Exception as exc:
-        return _error(f"Tabular prediction failed: {exc}", 400)
+    except Exception:  # noqa: BLE001 - preprocessing and estimator errors vary by input.
+        return _error("Tabular prediction failed. Check that the supplied values are valid.", 400)
 
 
 @app.post("/api/predict/image")
@@ -149,8 +149,8 @@ def predict_image_route():
         result["filename"] = upload.filename
         log_prediction("image", result)
         return jsonify({"ok": True, "result": result})
-    except Exception as exc:
-        return _error(f"Image prediction failed: {exc}", 400)
+    except Exception:  # noqa: BLE001 - image decoders and model runtimes raise varied errors.
+        return _error("Image prediction failed. Upload a valid JPG, JPEG, or PNG image.", 400)
 
 
 @app.errorhandler(413)
