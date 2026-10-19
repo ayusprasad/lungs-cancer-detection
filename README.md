@@ -27,11 +27,24 @@ Training metrics are saved in `logs/training_logs.json` and `logs/validation_log
 
 For a detailed interview explanation covering the architecture, model choices, alternatives, metrics, limitations, and likely questions, read `INTERVIEW_PROJECT_GUIDE.md`.
 
-The older Streamlit demo and notebook remain available:
-
 ```powershell
 streamlit run app.py
 jupyter notebook local_lung_cancer_demo.ipynb
 ```
+
+---
+
+## 🐳 Docker Deployment
+
+```bash
+# Build image
+docker build -t lung-cancer-detector .
+
+# Run container
+docker run -p 5000:5000 lung-cancer-detector
+```
+Access the application at [http://localhost:5000](http://localhost:5000).
+
+---
 
 This is a research/demo tool, not a medical diagnostic system. All predictions require clinical review.
